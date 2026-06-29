@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Patch Sheet">
+<meta name="theme-color" content="#0A0C11">
+<title>Patch Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0A0C11;
+  --surface:    #12151D;
+  --card:       #171B26;
+  --card-hover: #1C2130;
+  --border:     #222736;
+  --border2:    #2C3248;
+  --amber:      #F0A830;
+  --amber-bg:   rgba(240,168,48,0.10);
+  --amber-dim:  rgba(240,168,48,0.45);
+  --text:       #EEF0F5;
+  --muted:      #7A8599;
+  --dim:        #3E4860;
+  --mono:       'JetBrains Mono', monospace;
+  --sans:       'Inter', sans-serif;
+  --r:          12px;
+  --safe-top:   env(safe-area-inset-top, 0px);
+  --safe-bot:   env(safe-area-inset-bottom, 0px);
+}
+
+html { background: var(--bg); }
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ════════════════════════════════
+   START-SKÄRM
+════════════════════════════════ */
+#start {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  padding-top: calc(2rem + var(--safe-top));
+  gap: 0;
+}
+
+.start-icon {
+  width: 64px; height: 64px;
+  border: 1.5px solid var(--border2);
+  border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.75rem;
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+.start-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 40% 35%, rgba(240,168,48,0.12), transparent 70%);
+}
+.start-icon svg { width: 30px; height: 30px; position: relative; z-index: 1; }
+
+.start-title {
+  font-family: var(--mono);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+.start-sub {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 2.75rem;
+  letter-spacing: 0.02em;
+}
+
+/* Clipboard-knapp */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--amber);
+  color: #0A0C11;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 10px;
+  padding: 0.85rem 1.6rem;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  width: 100%;
+  max-width: 320px;
+  justify-content: center;
+}
+.btn-primary:active { opacity: 0.85; transform: scale(0.98); }
+.btn-primary svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 320px;
+  margin: 1rem 0;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.divider span {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+}
+
+/* Filväljare fallback */
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--surface);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 0.8rem 1.6rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  width: 100%;
+  max-width: 320px;
+  justify-content: center;
+  position: relative;
+}
+.btn-secondary:hover { border-color: var(--amber-dim); color: var(--text); }
+.btn-secondary svg { width: 16px; height: 16px; flex-shrink: 0; }
+.btn-secondary input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+
+/* Felmeddelande */
+#clipboard-error {
+  display: none;
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 320px;
+  background: rgba(220,60,60,0.08);
+  border: 1px solid rgba(220,60,60,0.25);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: #E07070;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.start-hint {
+  margin-top: 2rem;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ════════════════════════════════
+   VIEWER
+════════════════════════════════ */
+#viewer { display: none; min-height: 100vh; }
+
+/* Top bar */
+.top-bar {
+  position: sticky;
+  top: 0; z-index: 100;
+  background: rgba(10,12,17,0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.25rem;
+  padding-top: var(--safe-top);
+  height: calc(52px + var(--safe-top));
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bar-icon {
+  width: 26px; height: 26px;
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.bar-icon svg { width: 13px; height: 13px; }
+
+.bar-title {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.bar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.2rem 0.55rem;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  display: flex; align-items: center; gap: 0.35rem;
+}
+.pill b { color: var(--text); font-weight: 600; }
+
+.btn-new {
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  padding: 0.28rem 0.65rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn-new:hover { border-color: var(--amber-dim); color: var(--amber); }
+
+/* Sökrad */
+.search-bar {
+  padding: 0.85rem 1.25rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: calc(52px + var(--safe-top));
+  z-index: 99;
+}
+.search-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  padding: 0.55rem 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+.search-input::placeholder { color: var(--dim); }
+.search-input:focus { border-color: var(--amber-dim); }
+
+/* Universe-sektioner */
+.uni-section { padding: 1.25rem; }
+.uni-section + .uni-section { border-top: 1px solid var(--border); }
+
+.uni-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+.uni-badge {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  background: var(--amber-bg);
+  border: 1px solid rgba(240,168,48,0.18);
+  border-radius: 4px;
+  padding: 0.22rem 0.6rem;
+}
+.uni-count {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--dim);
+}
+
+/* Grid */
+.fixture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.65rem;
+}
+
+/* ════════════════════════════════
+   FIXTURE-KORT
+════════════════════════════════ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  transition: border-color 0.15s;
+  display: flex;
+  flex-direction: column;
+}
+.card:hover { border-color: var(--border2); }
+
+/* Vänsterkantfärg */
+.card-inner {
+  display: flex;
+  flex: 1;
+}
+.color-bar {
+  width: 3px;
+  background: var(--border);
+  flex-shrink: 0;
+  border-radius: 0;
+}
+
+.card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Topp: fixture# + adress + mode */
+.card-top {
+  padding: 0.9rem 0.95rem 0.8rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.addr-block { line-height: 1; flex-shrink: 0; }
+
+.addr-uni {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--amber);
+  letter-spacing: 0.1em;
+  display: block;
+  margin-bottom: 0.15rem;
+}
+.addr-num {
+  font-family: var(--mono);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  display: block;
+}
+
+.top-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+.fix-num {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--dim);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.18rem 0.5rem;
+  white-space: nowrap;
+}
+.mode-badge {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--amber);
+  background: var(--amber-bg);
+  border: 1px solid rgba(240,168,48,0.2);
+  border-radius: 4px;
+  padding: 0.22rem 0.55rem;
+  white-space: nowrap;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Body */
+.card-body {
+  padding: 0.8rem 0.95rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.label-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+.label-name.empty { color: var(--dim); font-style: italic; font-weight: 400; }
+
+.fixture-type {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.description {
+  font-size: 0.72rem;
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.1rem;
+}
+
+/* Footprint-rad */
+.card-foot {
+  padding: 0 0.95rem 0.75rem;
+  display: flex;
+  justify-content: flex-end;
+}
+.footprint-tag {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--dim);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.15rem 0.5rem;
+  letter-spacing: 0.04em;
+}
+
+/* ── Tom / fel ── */
+.notice {
+  text-align: center;
+  padding: 5rem 2rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--dim);
+  line-height: 1.8;
+}
+
+@media (max-width: 480px) {
+  .fixture-grid { grid-template-columns: 1fr; }
+  .pill { display: none; }
+  .addr-num { font-size: 1.6rem; }
+}
+
+/* PWA bottom safe area */
+.bottom-pad {
+  height: calc(1rem + var(--safe-bot));
+}
+</style>
+</head>
+<body>
+
+<!-- ══ START-SKÄRM ══ -->
+<div id="start">
+  <div class="start-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <line x1="8" y1="8" x2="11" y2="8"/>
+      <line x1="8" y1="12" x2="16" y2="12"/>
+      <line x1="8" y1="16" x2="14" y2="16"/>
+    </svg>
+  </div>
+
+  <div class="start-title">Patch Sheet</div>
+  <div class="start-sub">Blackout DMX viewer</div>
+
+  <button class="btn-primary" id="btn-clipboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="2" width="6" height="4" rx="1"/>
+      <path d="M8 4H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2"/>
+    </svg>
+    Läs från urklipp
+  </button>
+
+  <div id="clipboard-error">
+    Kunde inte läsa urklipp.<br>
+    Tillåt åtkomst i popup:en och försök igen,<br>
+    eller välj filen manuellt nedan.
+  </div>
+
+  <div class="divider"><span>ELLER</span></div>
+
+  <label class="btn-secondary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4M8 8l4-4 4 4"/>
+    </svg>
+    Välj CSV-fil
+    <input type="file" id="file-input" accept=".csv,text/csv">
+  </label>
+
+  <div class="start-hint">
+    Exportera från Blackout → Patch → Export<br>
+    Filen lämnar aldrig din enhet
+  </div>
+</div>
+
+<!-- ══ VIEWER ══ -->
+<div id="viewer">
+  <div class="top-bar">
+    <div class="bar-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="3"/>
+        <line x1="8" y1="8" x2="11" y2="8"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="14" y2="16"/>
+      </svg>
+    </div>
+    <span class="bar-title">Patch Sheet</span>
+    <div class="bar-right">
+      <div class="pill">Fixtures <b id="stat-total">—</b></div>
+      <div class="pill">Universes <b id="stat-uni">—</b></div>
+      <button class="btn-new" id="btn-new">Ny</button>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <input class="search-input" id="search-input" type="search" placeholder="Sök fixture, label, adress, mode…" autocorrect="off" autocapitalize="none">
+  </div>
+
+  <div id="content"></div>
+  <div class="bottom-pad"></div>
+</div>
+
+<script>
+// ════════════════════════════════
+// CSV-PARSER
+// ════════════════════════════════
+const COLS = {
+  num:       ['fixture number','fixture #','fixture_number','number','ch','channel','fix#'],
+  type:      ['fixture type','fixture_type','type','fixture','model'],
+  addr:      ['address','dmx address','start address','dmx','dmx_address','startaddress','addr'],
+  footprint: ['dmx footprint','footprint','channels','dmx_footprint','ch count','channel count'],
+  desc:      ['description','desc','profile'],
+  mode:      ['mode','dmx mode','mode name'],
+  label:     ['label','name','custom label','tag','label name'],
+  uni:       ['universe','univ','uni'],
+  color:     ['color','colour'],
+};
+
+function findCol(headers, aliases) {
+  const h = headers.map(s => s.toLowerCase().trim());
+  for (const a of aliases) {
+    const i = h.indexOf(a);
+    if (i !== -1) return i;
+  }
+  for (const a of aliases) {
+    const i = h.findIndex(s => s.includes(a));
+    if (i !== -1) return i;
+  }
+  return -1;
+}
+
+function splitLine(line, delim) {
+  const out = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; continue; }
+    if (c === delim && !inQ) { out.push(cur.trim()); cur = ''; continue; }
+    cur += c;
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const delim = lines[0].includes('\t') ? '\t' : ',';
+  const headers = splitLine(lines[0], delim);
+  const idx = {};
+  for (const [k, v] of Object.entries(COLS)) idx[k] = findCol(headers, v);
+
+  return lines.slice(1).map((line, i) => {
+    const p = splitLine(line, delim);
+    const get = k => idx[k] !== -1 && idx[k] < p.length ? p[idx[k]].trim() : '';
+
+    // Adress: kan vara "2.045" (uni.addr) eller enbart siffra
+    let addr = get('addr');
+    let uni  = get('uni');
+    if (!uni && addr.includes('.')) {
+      [uni, addr] = addr.split('.');
+    }
+    if (!uni) uni = '1';
+
+    return {
+      num:       get('num') || String(i + 1),
+      type:      get('type'),
+      addr:      parseInt(addr, 10) || 0,
+      footprint: get('footprint'),
+      desc:      get('desc'),
+      mode:      get('mode'),
+      label:     get('label'),
+      uni:       String(parseInt(uni, 10) || 1),
+      color:     get('color'),
+    };
+  }).filter(r => r.addr > 0 || r.type || r.label);
+}
+
+// ════════════════════════════════
+// FÄRGUPPLÖSNING
+// ════════════════════════════════
+const COLOR_MAP = {
+  red:'#CF5050', blue:'#4A90D9', green:'#3ECF6A', yellow:'#D4C020',
+  orange:'#D47820', purple:'#9055C8', pink:'#C84490', cyan:'#20B0C8',
+  white:'#B0B8C8', magenta:'#C040A0', amber:'#F0A830', lime:'#78CC30',
+  teal:'#28B090', violet:'#7050D0', rose:'#D05070',
+};
+function resolveColor(s) {
+  if (!s) return null;
+  const k = s.toLowerCase().trim();
+  if (COLOR_MAP[k]) return COLOR_MAP[k];
+  if (/^#[0-9a-f]{3,6}$/i.test(k)) return k;
+  return null;
+}
+
+// ════════════════════════════════
+// RENDERA KORT
+// ════════════════════════════════
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function buildCard(f) {
+  const color = resolveColor(f.color);
+  const addrStr = String(f.addr).padStart(3, '0');
+  const hasLabel = !!f.label;
+
+  // Sök-data
+  const searchStr = [f.num, f.addr, f.label, f.type, f.desc, f.mode, f.uni, f.footprint]
+    .join(' ').toLowerCase();
+
+  return `
+<div class="card" data-search="${esc(searchStr)}">
+  <div class="card-inner">
+    <div class="color-bar" style="${color ? `background:${color}` : ''}"></div>
+    <div class="card-content">
+
+      <div class="card-top">
+        <div class="addr-block">
+          <span class="addr-uni">U${esc(f.uni)}</span>
+          <span class="addr-num">${addrStr}</span>
+        </div>
+        <div class="top-right">
+          <span class="fix-num"># ${esc(f.num)}</span>
+          ${f.mode ? `<span class="mode-badge">${esc(f.mode)}</span>` : ''}
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="label-name ${hasLabel ? '' : 'empty'}">${hasLabel ? esc(f.label) : 'Ingen label'}</div>
+        ${f.type ? `<div class="fixture-type">${esc(f.type)}</div>` : ''}
+        ${f.desc ? `<div class="description">${esc(f.desc)}</div>` : ''}
+      </div>
+
+      ${f.footprint ? `
+      <div class="card-foot">
+        <span class="footprint-tag">${esc(f.footprint)} ch</span>
+      </div>` : ''}
+
+    </div>
+  </div>
+</div>`;
+}
+
+// ════════════════════════════════
+// RENDERA VIEWER
+// ════════════════════════════════
+function render(rows) {
+  if (!rows.length) {
+    document.getElementById('content').innerHTML =
+      '<div class="notice">Inga fixtures hittades.<br>Kontrollera att filen är exporterad från Blackout.</div>';
+    showViewer();
+    return;
+  }
+
+  // Gruppera per universum
+  const unis = {};
+  for (const r of rows) {
+    if (!unis[r.uni]) unis[r.uni] = [];
+    unis[r.uni].push(r);
+  }
+  const uniKeys = Object.keys(unis).sort((a,b) => Number(a)-Number(b));
+
+  document.getElementById('stat-total').textContent = rows.length;
+  document.getElementById('stat-uni').textContent   = uniKeys.length;
+
+  let html = '';
+  for (const u of uniKeys) {
+    const fixtures = unis[u].sort((a,b) => a.addr - b.addr);
+    html += `
+<div class="uni-section">
+  <div class="uni-header">
+    <span class="uni-badge">Universe ${u}</span>
+    <span class="uni-count">${fixtures.length} fixture${fixtures.length !== 1 ? 's' : ''}</span>
+  </div>
+  <div class="fixture-grid">
+    ${fixtures.map(buildCard).join('\n')}
+  </div>
+</div>`;
+  }
+
+  document.getElementById('content').innerHTML = html;
+  showViewer();
+
+  // Sök
+  const inp = document.getElementById('search-input');
+  inp.value = '';
+  inp.oninput = () => {
+    const q = inp.value.toLowerCase().trim();
+    document.querySelectorAll('.card').forEach(c => {
+      c.style.display = !q || c.dataset.search.includes(q) ? '' : 'none';
+    });
+    // Dölj tomma universe-sektioner vid sökning
+    document.querySelectorAll('.uni-section').forEach(sec => {
+      const synliga = [...sec.querySelectorAll('.card')].some(c => c.style.display !== 'none');
+      sec.style.display = synliga ? '' : 'none';
+    });
+  };
+}
+
+function showViewer() {
+  document.getElementById('start').style.display  = 'none';
+  document.getElementById('viewer').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+function showStart() {
+  document.getElementById('viewer').style.display = 'none';
+  document.getElementById('start').style.display  = 'flex';
+  document.getElementById('clipboard-error').style.display = 'none';
+  document.getElementById('file-input').value = '';
+}
+
+// ════════════════════════════════
+// CLIPBOARD
+// ════════════════════════════════
+document.getElementById('btn-clipboard').addEventListener('click', async () => {
+  const errEl = document.getElementById('clipboard-error');
+  errEl.style.display = 'none';
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text.trim()) {
+      errEl.style.display = 'block';
+      errEl.textContent = 'Urklipp är tomt. Kopiera CSV-filen från Blackout och försök igen.';
+      return;
+    }
+    const rows = parseCSV(text);
+    render(rows);
+  } catch (e) {
+    errEl.style.display = 'block';
+    errEl.innerHTML = 'Kunde inte läsa urklipp.<br>Tillåt åtkomst i popup:en och försök igen,<br>eller välj filen manuellt nedan.';
+  }
+});
+
+// ════════════════════════════════
+// FILVÄLJARE (fallback)
+// ════════════════════════════════
+document.getElementById('file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => render(parseCSV(ev.target.result));
+  reader.readAsText(file, 'utf-8');
+});
+
+// ════════════════════════════════
+// NY PATCH
+// ════════════════════════════════
+document.getElementById('btn-new').addEventListener('click', showStart);
+</script>
+</body>
+</html>
