@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Patch Sheet">
+<meta name="theme-color" content="#0A0C11">
+<title>Patch Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0A0C11;
+  --surface:    #12151D;
+  --card:       #171B26;
+  --border:     #222736;
+  --border2:    #2C3248;
+  --amber:      #F0A830;
+  --amber-bg:   rgba(240,168,48,0.10);
+  --amber-dim:  rgba(240,168,48,0.45);
+  --text:       #EEF0F5;
+  --muted:      #7A8599;
+  --dim:        #3E4860;
+  --green:      #3ECF6A;
+  --mono:       'JetBrains Mono', monospace;
+  --sans:       'Inter', sans-serif;
+  --r:          12px;
+  --safe-top:   env(safe-area-inset-top, 0px);
+  --safe-bot:   env(safe-area-inset-bottom, 0px);
+}
+
+html { background: var(--bg); }
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ════════════════════════════════
+   START-SKÄRM
+════════════════════════════════ */
+#start {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  padding-top: calc(2rem + var(--safe-top));
+}
+
+.start-icon {
+  width: 64px; height: 64px;
+  border: 1.5px solid var(--border2);
+  border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.75rem;
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+.start-icon::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 40% 35%, rgba(240,168,48,0.12), transparent 70%);
+}
+.start-icon svg { width: 30px; height: 30px; position: relative; z-index: 1; }
+
+.start-title {
+  font-family: var(--mono);
+  font-size: 1rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text); margin-bottom: 0.4rem;
+}
+.start-sub {
+  font-size: 0.8rem; color: var(--muted);
+  margin-bottom: 2.75rem; letter-spacing: 0.02em;
+}
+
+.btn-primary {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: var(--amber); color: #0A0C11;
+  font-family: var(--mono); font-size: 0.8rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border: none; border-radius: 10px;
+  padding: 0.85rem 1.6rem; cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  width: 100%; max-width: 320px; justify-content: center;
+}
+.btn-primary:active { opacity: 0.85; transform: scale(0.98); }
+.btn-primary svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+.divider {
+  display: flex; align-items: center; gap: 0.75rem;
+  width: 100%; max-width: 320px; margin: 1rem 0;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.divider span {
+  font-family: var(--mono); font-size: 0.65rem;
+  color: var(--dim); letter-spacing: 0.08em;
+}
+
+.btn-secondary {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: var(--surface); color: var(--muted);
+  font-family: var(--mono); font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.06em; border: 1px solid var(--border2);
+  border-radius: 10px; padding: 0.8rem 1.6rem; cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  width: 100%; max-width: 320px; justify-content: center; position: relative;
+}
+.btn-secondary:hover { border-color: var(--amber-dim); color: var(--text); }
+.btn-secondary svg { width: 16px; height: 16px; flex-shrink: 0; }
+.btn-secondary input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+
+#clipboard-error {
+  display: none; margin-top: 1rem;
+  width: 100%; max-width: 320px;
+  background: rgba(220,60,60,0.08); border: 1px solid rgba(220,60,60,0.25);
+  border-radius: 8px; padding: 0.75rem 1rem;
+  font-family: var(--mono); font-size: 0.72rem;
+  color: #E07070; line-height: 1.5; text-align: center;
+}
+
+.start-hint {
+  margin-top: 2rem; font-family: var(--mono);
+  font-size: 0.65rem; color: var(--dim);
+  letter-spacing: 0.06em; text-align: center; line-height: 1.6;
+}
+
+.btn-ghost {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: none; color: var(--muted);
+  font-family: var(--mono); font-size: 0.72rem;
+  letter-spacing: 0.06em; border: none;
+  cursor: pointer; padding: 0.4rem 0;
+  transition: color 0.15s; margin-top: 1rem;
+}
+.btn-ghost:hover { color: var(--amber); }
+.btn-ghost svg { width: 14px; height: 14px; }
+
+/* Auto-läser indikator */
+.reading-indicator {
+  display: none;
+  align-items: center; gap: 0.5rem;
+  font-family: var(--mono); font-size: 0.75rem; color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+.reading-indicator.active { display: flex; }
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--amber);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ════════════════════════════════
+   VIEWER
+════════════════════════════════ */
+#viewer { display: none; min-height: 100vh; }
+
+.top-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,12,17,0.88);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.25rem; padding-top: var(--safe-top);
+  height: calc(52px + var(--safe-top));
+  display: flex; align-items: center; gap: 0.75rem;
+}
+
+.bar-icon {
+  width: 26px; height: 26px;
+  border: 1px solid var(--border2); border-radius: 7px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.bar-icon svg { width: 13px; height: 13px; }
+
+.bar-title {
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--amber);
+}
+
+.bar-right {
+  margin-left: auto; display: flex; align-items: center; gap: 0.5rem;
+}
+
+.pill {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 5px; padding: 0.2rem 0.55rem;
+  font-family: var(--mono); font-size: 0.65rem; color: var(--muted);
+  display: flex; align-items: center; gap: 0.35rem;
+}
+.pill b { color: var(--text); font-weight: 600; }
+
+.btn-bar {
+  background: none; border: 1px solid var(--border2);
+  border-radius: 6px; color: var(--muted);
+  font-family: var(--mono); font-size: 0.65rem;
+  letter-spacing: 0.06em; padding: 0.28rem 0.65rem;
+  cursor: pointer; transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap; display: flex; align-items: center; gap: 0.35rem;
+}
+.btn-bar:hover { border-color: var(--amber-dim); color: var(--amber); }
+.btn-bar svg { width: 12px; height: 12px; }
+
+.search-bar {
+  padding: 0.85rem 1.25rem; background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: calc(52px + var(--safe-top)); z-index: 99;
+}
+.search-input {
+  width: 100%; background: var(--surface);
+  border: 1px solid var(--border2); border-radius: 8px;
+  color: var(--text); font-family: var(--mono); font-size: 0.8rem;
+  padding: 0.55rem 0.9rem; outline: none;
+  transition: border-color 0.15s; -webkit-appearance: none;
+}
+.search-input::placeholder { color: var(--dim); }
+.search-input:focus { border-color: var(--amber-dim); }
+
+.bottom-pad { height: calc(1rem + var(--safe-bot)); }
+
+@media (max-width: 480px) {
+  .fixture-grid { grid-template-columns: 1fr; }
+  .pill { display: none; }
+  .addr-num { font-size: 1.6rem; }
+}
+
+.uni-section { padding: 1.25rem; }
+.uni-section + .uni-section { border-top: 1px solid var(--border); }
+
+.uni-header {
+  display: flex; align-items: center; gap: 0.65rem; margin-bottom: 1rem;
+}
+.uni-badge {
+  font-family: var(--mono); font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--amber); background: var(--amber-bg);
+  border: 1px solid rgba(240,168,48,0.18); border-radius: 4px;
+  padding: 0.22rem 0.6rem;
+}
+.uni-count { font-family: var(--mono); font-size: 0.65rem; color: var(--dim); }
+
+.fixture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.65rem;
+}
+
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+  transition: border-color 0.15s; display: flex; flex-direction: column;
+}
+.card:hover { border-color: var(--border2); }
+
+.card-inner { display: flex; flex: 1; }
+.color-bar { width: 3px; background: var(--border); flex-shrink: 0; }
+.card-content { flex: 1; min-width: 0; }
+
+.card-top {
+  padding: 0.9rem 0.95rem 0.8rem;
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.addr-block { line-height: 1; flex-shrink: 0; }
+.addr-uni {
+  font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
+  color: var(--amber); letter-spacing: 0.1em; display: block; margin-bottom: 0.15rem;
+}
+.addr-num {
+  font-family: var(--mono); font-size: 2rem; font-weight: 700;
+  color: var(--text); letter-spacing: -0.03em; line-height: 1; display: block;
+}
+
+.top-right {
+  display: flex; flex-direction: column;
+  align-items: flex-end; gap: 0.45rem; flex-shrink: 0;
+}
+.fix-num {
+  font-family: var(--mono); font-size: 0.6rem; color: var(--dim);
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.18rem 0.5rem; white-space: nowrap;
+}
+.mode-badge {
+  font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 0.05em; color: var(--amber);
+  background: var(--amber-bg); border: 1px solid rgba(240,168,48,0.2);
+  border-radius: 4px; padding: 0.22rem 0.55rem;
+  white-space: nowrap; max-width: 130px;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+.card-body {
+  padding: 0.8rem 0.95rem 0.85rem;
+  display: flex; flex-direction: column; gap: 0.2rem; flex: 1;
+}
+.label-name {
+  font-size: 0.95rem; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
+}
+.label-name.empty { color: var(--dim); font-style: italic; font-weight: 400; }
+.fixture-type {
+  font-size: 0.78rem; font-weight: 500; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.description {
+  font-size: 0.72rem; color: var(--dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 0.1rem;
+}
+
+.card-foot { padding: 0 0.95rem 0.75rem; display: flex; justify-content: flex-end; }
+.footprint-tag {
+  font-family: var(--mono); font-size: 0.6rem; color: var(--dim);
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.15rem 0.5rem; letter-spacing: 0.04em;
+}
+
+.notice {
+  text-align: center; padding: 5rem 2rem;
+  font-family: var(--mono); font-size: 0.8rem;
+  color: var(--dim); line-height: 1.8;
+}
+
+/* ════ DONE-TOGGLE ════ */
+.card.done {
+  opacity: 0.35;
+  border-color: var(--border) !important;
+}
+.card.done .color-bar { opacity: 0.3; }
+.card.done .addr-num { color: var(--muted); }
+.card.done .addr-uni { color: var(--dim); }
+.card.done .mode-badge { opacity: 0.4; }
+.card { cursor: pointer; user-select: none; -webkit-user-select: none; }
+
+/* Progress-rad */
+.progress-bar {
+  padding: 0.5rem 1.25rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.75rem;
+  position: sticky; top: calc(52px + var(--safe-top)); z-index: 99;
+}
+.progress-track {
+  flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: var(--green);
+  border-radius: 2px; transition: width 0.25s ease;
+  width: 0%;
+}
+.progress-label {
+  font-family: var(--mono); font-size: 0.65rem; color: var(--muted);
+  white-space: nowrap; flex-shrink: 0;
+}
+.progress-label b { color: var(--green); }
+
+.search-bar {
+  padding: 0.85rem 1.25rem; background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: calc(52px + 29px + var(--safe-top)); z-index: 98;
+}
+
+/* ════════════════════════════════
+   GUIDE MODAL
+════════════════════════════════ */
+.modal-backdrop {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+.modal-backdrop.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 560px;
+  max-height: 88vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(1.5rem + var(--safe-bot));
+}
+
+.modal-handle {
+  width: 36px; height: 4px;
+  background: var(--border2); border-radius: 2px;
+  margin: 0.85rem auto 0;
+}
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.modal-title {
+  font-family: var(--mono); font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--amber);
+}
+.modal-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); padding: 0.25rem;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; transition: color 0.15s;
+}
+.modal-close:hover { color: var(--text); }
+.modal-close svg { width: 18px; height: 18px; }
+
+.modal-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+
+.guide-step {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+}
+.guide-step-head {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.85rem 1rem; border-bottom: 1px solid var(--border);
+}
+.guide-num {
+  width: 24px; height: 24px; border-radius: 6px;
+  background: var(--amber-bg); border: 1px solid rgba(240,168,48,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 0.65rem; font-weight: 700;
+  color: var(--amber); flex-shrink: 0;
+}
+.guide-step-title {
+  font-size: 0.85rem; font-weight: 600; color: var(--text); line-height: 1.2;
+}
+.guide-step-title small {
+  display: block; font-size: 0.7rem; font-weight: 400; color: var(--muted); margin-top: 0.1rem;
+}
+.guide-step-body { padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+.guide-row {
+  display: flex; align-items: flex-start; gap: 0.6rem;
+}
+.guide-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--border2); flex-shrink: 0; margin-top: 0.5rem;
+}
+.guide-text {
+  font-size: 0.8rem; color: var(--muted); line-height: 1.5;
+}
+.guide-text strong { color: var(--text); font-weight: 600; }
+
+.flow-list { display: flex; flex-direction: column; }
+.flow-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.55rem 0;
+}
+.flow-item + .flow-item { border-top: 1px solid var(--border); }
+.flow-em { font-size: 1rem; flex-shrink: 0; width: 28px; text-align: center; }
+.flow-label { font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+.flow-label strong { color: var(--text); font-weight: 500; }
+
+.tip-box {
+  background: rgba(62,207,106,0.05);
+  border: 1px solid rgba(62,207,106,0.15);
+  border-radius: 8px; padding: 0.7rem 0.85rem;
+  display: flex; gap: 0.6rem; align-items: flex-start;
+}
+.tip-box span { font-size: 0.78rem; color: #5EC888; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<!-- ══ START-SKÄRM ══ -->
+<div id="start">
+  <div class="start-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <line x1="8" y1="8" x2="11" y2="8"/>
+      <line x1="8" y1="12" x2="16" y2="12"/>
+      <line x1="8" y1="16" x2="14" y2="16"/>
+    </svg>
+  </div>
+
+  <div class="start-title">Patch Sheet</div>
+  <div class="start-sub">Blackout DMX viewer</div>
+
+  <div class="reading-indicator" id="reading-indicator">
+    <div class="spinner"></div>
+    Läser urklipp…
+  </div>
+
+  <button class="btn-primary" id="btn-clipboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="2" width="6" height="4" rx="1"/>
+      <path d="M8 4H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2"/>
+    </svg>
+    Läs från urklipp
+  </button>
+
+  <div id="clipboard-error"></div>
+
+  <div class="divider"><span>ELLER</span></div>
+
+  <label class="btn-secondary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4M8 8l4-4 4 4"/>
+    </svg>
+    Välj CSV-fil
+    <input type="file" id="file-input" accept=".csv,text/csv">
+  </label>
+
+  <div class="start-hint">
+    Exportera från Blackout → Patch → Export<br>
+    Filen lämnar aldrig din enhet
+  </div>
+
+  <button class="btn-ghost" id="btn-guide-start">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    Hur fungerar det?
+  </button>
+</div>
+
+<!-- ══ VIEWER ══ -->
+<div id="viewer">
+  <div class="top-bar">
+    <div class="bar-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="3"/>
+        <line x1="8" y1="8" x2="11" y2="8"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="14" y2="16"/>
+      </svg>
+    </div>
+    <span class="bar-title">Patch Sheet</span>
+    <div class="bar-right">
+      <div class="pill">Fixtures <b id="stat-total">—</b></div>
+      <div class="pill">Universes <b id="stat-uni">—</b></div>
+      <button class="btn-bar" id="btn-guide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Guide
+      </button>
+      <button class="btn-bar" id="btn-new">Ny</button>
+    </div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-label"><b id="progress-done">0</b> / <span id="progress-total">0</span> klara</div>
+  </div>
+
+  <div class="search-bar">
+    <input class="search-input" id="search-input" type="search" placeholder="Sök fixture, label, adress, mode…" autocorrect="off" autocapitalize="none">
+  </div>
+
+  <div id="content"></div>
+  <div class="bottom-pad"></div>
+</div>
+
+<!-- ══ GUIDE MODAL ══ -->
+<div class="modal-backdrop" id="modal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title">Kom igång</span>
+      <button class="modal-close" id="modal-close" aria-label="Stäng">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Steg 1 -->
+      <div class="guide-step">
+        <div class="guide-step-head">
+          <div class="guide-num">1</div>
+          <div class="guide-step-title">
+            Installera genvägen
+            <small>Gör detta en gång</small>
+          </div>
+        </div>
+        <div class="guide-step-body">
+          <div class="guide-row">
+            <div class="guide-dot"></div>
+            <div class="guide-text">Öppna länken nedan på din iPhone eller iPad</div>
+          </div>
+          <div class="guide-row">
+            <div class="guide-dot"></div>
+            <div class="guide-text">Tryck <strong>Lägg till genväg</strong> i Genvägar-appen</div>
+          </div>
+          <a href="https://www.icloud.com/shortcuts/36e0f80c57e24df898a5b9b7bfb215be" style="display:flex;align-items:center;gap:0.5rem;background:var(--amber);color:#0A0C11;font-family:var(--mono);font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-decoration:none;border-radius:8px;padding:0.7rem 1.1rem;margin-top:0.25rem;justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" width="14" height="14"><path d="M12 2L12 14M8 10l4 4 4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+            Installera genväg
+          </a>
+        </div>
+      </div>
+
+      <!-- Steg 2 -->
+      <div class="guide-step">
+        <div class="guide-step-head">
+          <div class="guide-num">2</div>
+          <div class="guide-step-title">Varje gång du får en patchlista</div>
+        </div>
+        <div class="guide-step-body">
+          <div class="flow-list">
+            <div class="flow-item">
+              <div class="flow-em">📥</div>
+              <div class="flow-label"><strong>Ta emot filen</strong> via AirDrop eller iMessage</div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-em">⬆️</div>
+              <div class="flow-label">Tryck och håll på filen → <strong>Dela</strong></div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-em">⚡</div>
+              <div class="flow-label">Välj <strong>Patch Sheet</strong> i listan</div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-em">✅</div>
+              <div class="flow-label">Appen öppnas och läser patchen automatiskt</div>
+            </div>
+          </div>
+          <div class="tip-box">
+            <span>🔒</span>
+            <span>iOS kan fråga "Tillåt att Patch Sheet läser urklipp?" — tryck Tillåt. Filen lämnar aldrig din enhet.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manuellt alternativ -->
+      <div class="guide-step">
+        <div class="guide-step-head">
+          <div class="guide-num">→</div>
+          <div class="guide-step-title">
+            Utan genväg
+            <small>Manuellt alternativ</small>
+          </div>
+        </div>
+        <div class="guide-step-body">
+          <div class="guide-row">
+            <div class="guide-dot"></div>
+            <div class="guide-text">Tryck <strong>Läs från urklipp</strong> om du kopierat CSV-innehållet manuellt</div>
+          </div>
+          <div class="guide-row">
+            <div class="guide-dot"></div>
+            <div class="guide-text">Eller tryck <strong>Välj CSV-fil</strong> för att öppna filen direkt från Files-appen</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════
+// CSV-PARSER
+// ════════════════════════════════
+const COLS = {
+  num:       ['fixture number','fixture #','fixture_number','number','ch','channel','fix#'],
+  type:      ['fixture type','fixture_type','type','fixture','model'],
+  addr:      ['address','dmx address','start address','dmx','dmx_address','startaddress','addr'],
+  footprint: ['dmx footprint','footprint','channels','dmx_footprint','ch count','channel count'],
+  desc:      ['description','desc','profile'],
+  mode:      ['mode','dmx mode','mode name'],
+  label:     ['label','name','custom label','tag','label name'],
+  uni:       ['universe','univ','uni'],
+  color:     ['color','colour'],
+};
+
+function findCol(headers, aliases) {
+  const h = headers.map(s => s.toLowerCase().trim());
+  for (const a of aliases) { const i = h.indexOf(a); if (i !== -1) return i; }
+  for (const a of aliases) { const i = h.findIndex(s => s.includes(a)); if (i !== -1) return i; }
+  return -1;
+}
+
+function splitLine(line, delim) {
+  const out = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; continue; }
+    if (c === delim && !inQ) { out.push(cur.trim()); cur = ''; continue; }
+    cur += c;
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const delim = lines[0].includes('\t') ? '\t' : ',';
+  const headers = splitLine(lines[0], delim);
+  const idx = {};
+  for (const [k, v] of Object.entries(COLS)) idx[k] = findCol(headers, v);
+
+  return lines.slice(1).map((line, i) => {
+    const p = splitLine(line, delim);
+    const get = k => idx[k] !== -1 && idx[k] < p.length ? p[idx[k]].trim() : '';
+    let addr = get('addr'), uni = get('uni');
+    if (!uni && addr.includes('.')) { [uni, addr] = addr.split('.'); }
+    if (!uni) uni = '1';
+    return {
+      num: get('num') || String(i + 1),
+      type: get('type'), addr: parseInt(addr, 10) || 0,
+      footprint: get('footprint'), desc: get('desc'),
+      mode: get('mode'), label: get('label'),
+      uni: String(parseInt(uni, 10) || 1), color: get('color'),
+    };
+  }).filter(r => r.addr > 0 || r.type || r.label);
+}
+
+const COLOR_MAP = {
+  red:'#CF5050', blue:'#4A90D9', green:'#3ECF6A', yellow:'#D4C020',
+  orange:'#D47820', purple:'#9055C8', pink:'#C84490', cyan:'#20B0C8',
+  white:'#B0B8C8', magenta:'#C040A0', amber:'#F0A830', lime:'#78CC30',
+  teal:'#28B090', violet:'#7050D0', rose:'#D05070',
+};
+function resolveColor(s) {
+  if (!s) return null;
+  const k = s.toLowerCase().trim();
+  if (COLOR_MAP[k]) return COLOR_MAP[k];
+  if (/^#[0-9a-f]{3,6}$/i.test(k)) return k;
+  return null;
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function buildCard(f) {
+  const color = resolveColor(f.color);
+  const addrStr = String(f.addr).padStart(3, '0');
+  const hasLabel = !!f.label;
+  const searchStr = [f.num, f.addr, f.label, f.type, f.desc, f.mode, f.uni, f.footprint].join(' ').toLowerCase();
+  return `
+<div class="card" data-search="${esc(searchStr)}">
+  <div class="card-inner">
+    <div class="color-bar" style="${color ? `background:${color}` : ''}"></div>
+    <div class="card-content">
+      <div class="card-top">
+        <div class="addr-block">
+          <span class="addr-uni">U${esc(f.uni)}</span>
+          <span class="addr-num">${addrStr}</span>
+        </div>
+        <div class="top-right">
+          <span class="fix-num"># ${esc(f.num)}</span>
+          ${f.mode ? `<span class="mode-badge">${esc(f.mode)}</span>` : ''}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="label-name ${hasLabel ? '' : 'empty'}">${hasLabel ? esc(f.label) : 'Ingen label'}</div>
+        ${f.type ? `<div class="fixture-type">${esc(f.type)}</div>` : ''}
+        ${f.desc ? `<div class="description">${esc(f.desc)}</div>` : ''}
+      </div>
+      ${f.footprint ? `<div class="card-foot"><span class="footprint-tag">${esc(f.footprint)} ch</span></div>` : ''}
+    </div>
+  </div>
+</div>`;
+}
+
+function render(rows) {
+  if (!rows.length) {
+    document.getElementById('content').innerHTML =
+      '<div class="notice">Inga fixtures hittades.<br>Kontrollera att filen är exporterad från Blackout.</div>';
+    showViewer(); return;
+  }
+  const unis = {};
+  for (const r of rows) { if (!unis[r.uni]) unis[r.uni] = []; unis[r.uni].push(r); }
+  const uniKeys = Object.keys(unis).sort((a,b) => Number(a)-Number(b));
+  document.getElementById('stat-total').textContent = rows.length;
+  document.getElementById('stat-uni').textContent   = uniKeys.length;
+  let html = '';
+  for (const u of uniKeys) {
+    const fixtures = unis[u].sort((a,b) => a.addr - b.addr);
+    html += `<div class="uni-section">
+  <div class="uni-header">
+    <span class="uni-badge">Universe ${u}</span>
+    <span class="uni-count">${fixtures.length} fixture${fixtures.length !== 1 ? 's' : ''}</span>
+  </div>
+  <div class="fixture-grid">${fixtures.map(buildCard).join('\n')}</div>
+</div>`;
+  }
+  document.getElementById('content').innerHTML = html;
+  showViewer();
+  updateProgress();
+  const inp = document.getElementById('search-input');
+  inp.value = '';
+  inp.oninput = () => {
+    const q = inp.value.toLowerCase().trim();
+    document.querySelectorAll('.card').forEach(c => {
+      c.style.display = !q || c.dataset.search.includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.uni-section').forEach(sec => {
+      sec.style.display = [...sec.querySelectorAll('.card')].some(c => c.style.display !== 'none') ? '' : 'none';
+    });
+  };
+}
+
+function showViewer() {
+  document.getElementById('start').style.display  = 'none';
+  document.getElementById('viewer').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+function showStart() {
+  document.getElementById('viewer').style.display = 'none';
+  document.getElementById('start').style.display  = 'flex';
+  document.getElementById('clipboard-error').style.display = 'none';
+  document.getElementById('file-input').value = '';
+}
+
+// ════════════════════════════════
+// CLIPBOARD — manuell knapp
+// ════════════════════════════════
+async function readClipboard(silent) {
+  const errEl = document.getElementById('clipboard-error');
+  errEl.style.display = 'none'; errEl.textContent = '';
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text.trim()) {
+      if (!silent) { errEl.style.display = 'block'; errEl.textContent = 'Urklipp är tomt. Kopiera CSV-filen från Blackout och försök igen.'; }
+      return false;
+    }
+    // Kolla att det ser ut som CSV (har komma eller tab + minst 2 rader)
+    if (!text.includes(',') && !text.includes('\t')) {
+      if (!silent) { errEl.style.display = 'block'; errEl.textContent = 'Urklipp verkar inte innehålla en CSV-fil.'; }
+      return false;
+    }
+    const rows = parseCSV(text);
+    if (!rows.length && !silent) {
+      errEl.style.display = 'block'; errEl.textContent = 'Kunde inte tolka filen. Kontrollera att den är exporterad från Blackout.';
+      return false;
+    }
+    render(rows);
+    return true;
+  } catch (e) {
+    if (!silent) {
+      errEl.style.display = 'block';
+      errEl.innerHTML = 'Kunde inte läsa urklipp.<br>Tillåt åtkomst i popup:en och försök igen.';
+    }
+    return false;
+  }
+}
+
+document.getElementById('btn-clipboard').addEventListener('click', () => readClipboard(false));
+
+// ════════════════════════════════
+// AUTO-LÄS VID SIDLADDNING
+// ════════════════════════════════
+window.addEventListener('load', async () => {
+  // Liten fördröjning så genvägen hinner köra klart
+  await new Promise(r => setTimeout(r, 400));
+  const ind = document.getElementById('reading-indicator');
+  ind.classList.add('active');
+  const ok = await readClipboard(true);
+  ind.classList.remove('active');
+});
+
+// ════════════════════════════════
+// FILVÄLJARE
+// ════════════════════════════════
+document.getElementById('file-input').addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => render(parseCSV(ev.target.result));
+  reader.readAsText(file, 'utf-8');
+});
+
+// ════════════════════════════════
+// NY PATCH + GUIDE
+// ════════════════════════════════
+document.getElementById('btn-new').addEventListener('click', showStart);
+
+const modal    = document.getElementById('modal');
+const btnGuide = document.getElementById('btn-guide');
+const btnGuideStart = document.getElementById('btn-guide-start');
+const btnClose = document.getElementById('modal-close');
+
+function openGuide() { modal.classList.add('open'); }
+btnGuide.addEventListener('click', openGuide);
+btnGuideStart.addEventListener('click', openGuide);
+btnClose.addEventListener('click', () => modal.classList.remove('open'));
+modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
+
+// ════════════════════════════════
+// DONE-TOGGLE
+// ════════════════════════════════
+function updateProgress() {
+  const all  = document.querySelectorAll('.card').length;
+  const done = document.querySelectorAll('.card.done').length;
+  document.getElementById('progress-done').textContent  = done;
+  document.getElementById('progress-total').textContent = all;
+  document.getElementById('progress-fill').style.width  = all ? (done / all * 100) + '%' : '0%';
+}
+
+document.getElementById('content').addEventListener('click', e => {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  card.classList.toggle('done');
+  updateProgress();
+});
+</script>
+</body>
+</html>
